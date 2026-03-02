@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Formation Full Stack - Express MySQL React</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Formation Full Stack Moderne</h1>
+        <p>Express ESM • MySQL • React • Axios • Zod • React Hook Form</p>
+    </header>
+
+    <nav>
+        <button onclick="showSection('architecture')">Architecture</button>
+        <button onclick="showSection('express')">Express</button>
+        <button onclick="showSection('zod')">Zod</button>
+        <button onclick="showSection('mysql')">MySQL</button>
+        <button onclick="showSection('react')">React</button>
+        <button onclick="showSection('integration')">Intégration</button>
+        <button onclick="showSection('exercice')">Exercice</button>
+    </nav>
+
+    <main>
+
+        <!-- ================= ARCHITECTURE ================= -->
+
+        <section id="architecture" class="section architecture">
+
+            <h2>Architecture Générale</h2>
+
+            <h3>1. Vision globale</h3>
+            <p>Le frontend envoie une requête HTTP vers le backend.
+                Le backend valide, traite et communique avec la base de données.</p>
+
+            <h3>2. Flux complet</h3>
+            <ol>
+                <li>Utilisateur remplit formulaire</li>
+                <li>Validation frontend (Zod)</li>
+                <li>Envoi HTTP (Axios)</li>
+                <li>Validation backend (Zod)</li>
+                <li>Insertion MySQL</li>
+                <li>Réponse JSON</li>
+            </ol>
+
+            <h3>3. Séparation des responsabilités</h3>
+            <ul>
+                <li>React → Interface utilisateur</li>
+                <li>Express → API serveur</li>
+                <li>Zod → Validation</li>
+                <li>MySQL → Stockage</li>
+            </ul>
+
+            <h3>4. Pourquoi doubler la validation</h3>
+            <p>Frontend pour l’expérience utilisateur.
+                Backend pour la sécurité.</p>
+
+            <h3>5. Architecture logique simplifiée</h3>
+            <p>Client → API → Base de données</p>
+
+            <h3>6. Objectif pédagogique</h3>
+            <p>Comprendre chaque couche indépendamment puis ensemble.</p>
+
+        </section>
+
+        <!-- ================= EXPRESS ================= -->
+
+        <section id="express" class="section express hidden">
+
+            <h2>Express - Création du serveur</h2>
+
+            <h3>1. Rôle technique</h3>
+            <p>Créer une API REST capable de recevoir et renvoyer du JSON.</p>
+
+            <h3>2. Activation du mode ESM</h3>
+
+            <pre><code>
+{
+  "type": "module"
+}
+</code></pre>
+
+            <p>Permet d'utiliser import/export.</p>
+
+            <h3>3. Serveur minimal</h3>
+
+            <pre><code>
+import express from "express";
+
+const app = express();
+
+app.use(express.json());
+
+app.get("/", (req, res) => {
+  res.send("API active");
+});
+
+app.listen(3000);
+</code></pre>
+
+            <h3>4. Explication simplifiée</h3>
+            <ul>
+                <li>import → charge Express</li>
+                <li>express() → crée serveur</li>
+                <li>use() → active lecture JSON</li>
+                <li>get() → crée route</li>
+                <li>listen() → démarre serveur</li>
+            </ul>
+
+            <h3>5. Route POST structurée</h3>
+
+            <pre><code>
+app.post("/users", (req, res) => {
+  console.log(req.body);
+  res.json({ message: "Reçu" });
+});
+</code></pre>
+
+            <h3>6. Vision architecture</h3>
+            <p>Express est la couche contrôleur entre client et base.</p>
+
+        </section>
+
+        <!-- ================= ZOD ================= -->
+
+        <section id="zod" class="section zod hidden">
+
+            <h2>Zod - Validation des données</h2>
+
+            <h3>1. Pourquoi valider</h3>
+            <p>Les données utilisateur sont imprévisibles.</p>
+
+            <h3>2. Définition d’un schéma</h3>
+
+            <pre><code>
+import { z } from "zod";
+
+const schema = z.object({
+  name: z.string().min(2),
+  email: z.string().email()
+});
+</code></pre>
+
+            <h3>3. Comprendre les règles</h3>
+            <ul>
+                <li>string → texte</li>
+                <li>min(2) → longueur minimale</li>
+                <li>email() → format valide</li>
+            </ul>
+
+            <h3>4. Validation sécurisée</h3>
+
+            <pre><code>
+const result = schema.safeParse(req.body);
+
+if(!result.success){
+  return res.status(400).json(result.error);
+}
+</code></pre>
+
+            <h3>5. Différence parse / safeParse</h3>
+            <ul>
+                <li>parse → déclenche erreur</li>
+                <li>safeParse → retourne objet résultat</li>
+            </ul>
+
+            <h3>6. Intérêt stratégique</h3>
+            <p>Évite d’envoyer des données corrompues en base.</p>
+
+        </section>
+
+        <!-- ================= MYSQL ================= -->
+
+        <section id="mysql" class="section mysql hidden">
+
+            <h2>MySQL - Gestion des données</h2>
+
+            <h3>1. Rôle</h3>
+            <p>Stocker les données validées.</p>
+
+            <h3>2. Connexion via pool</h3>
+
+            <pre><code>
+import mysql from "mysql2/promise";
+
+const pool = mysql.createPool({
+  host:"localhost",
+  user:"root",
+  password:"password",
+  database:"test"
+});
+</code></pre>
+
+            <h3>3. Pourquoi un pool</h3>
+            <p>Optimisation des connexions.</p>
+
+            <h3>4. Requête sécurisée</h3>
+
+            <pre><code>
+await pool.query(
+ "INSERT INTO users (name,email) VALUES (?,?)",
+ [name,email]
+);
+</code></pre>
+
+            <h3>5. Pourquoi les ?</h3>
+            <p>Protection contre injection SQL.</p>
+
+            <h3>6. Cycle BDD</h3>
+            <ol>
+                <li>Connexion</li>
+                <li>Exécution</li>
+                <li>Retour résultat</li>
+            </ol>
+
+        </section>
+
+        <!-- ================= REACT ================= -->
+
+        <section id="react" class="section react hidden">
+
+            <h2>React Hook Form + Zod</h2>
+
+            <h3>1. Problème classique</h3>
+            <p>Gestion complexe des états dans les formulaires.</p>
+
+            <h3>2. Solution performante</h3>
+            <p>React Hook Form limite les re-renders.</p>
+
+            <h3>3. Schéma Zod côté frontend</h3>
+
+            <pre><code>
+const schema = z.object({
+  name: z.string().min(2),
+  email: z.string().email()
+});
+</code></pre>
+
+            <h3>4. Formulaire complet</h3>
+
+            <pre><code>
+const { register, handleSubmit, formState:{errors} } =
+useForm({ resolver: zodResolver(schema) });
+
+const onSubmit = data => console.log(data);
+</code></pre>
+
+            <h3>5. Comprendre chaque élément</h3>
+            <ul>
+                <li>useForm → moteur</li>
+                <li>register → connecte input</li>
+                <li>handleSubmit → contrôle validation</li>
+                <li>errors → affiche erreur</li>
+            </ul>
+
+            <h3>6. Objectif UX</h3>
+            <p>Valider avant envoi serveur.</p>
+
+        </section>
+
+        <!-- ================= INTEGRATION ================= -->
+
+        <section id="integration" class="section integration hidden">
+
+            <h2>Intégration complète avec Axios</h2>
+
+            <h3>1. Création instance</h3>
+
+            <pre><code>
+import axios from "axios";
+
+const api = axios.create({
+ baseURL:"http://localhost:3000"
+});
+</code></pre>
+
+            <h3>2. Envoi POST</h3>
+
+            <pre><code>
+await api.post("/users", data);
+</code></pre>
+
+            <h3>3. Cycle complet</h3>
+            <ol>
+                <li>Submit</li>
+                <li>Axios envoie</li>
+                <li>Express valide</li>
+                <li>MySQL insère</li>
+                <li>Réponse JSON</li>
+            </ol>
+
+            <h3>4. Gestion erreur</h3>
+            <p>Afficher message si status 400.</p>
+
+            <h3>5. Architecture robuste</h3>
+            <p>Frontend léger, backend sécurisé.</p>
+
+            <h3>6. Vision professionnelle</h3>
+            <p>Séparation claire UI / API / Data.</p>
+
+        </section>
+
+        <!-- ================= EXERCICE ================= -->
+
+        <section id="exercice" class="section exercice hidden">
+
+            <h2>Exercice pratique complet</h2>
+
+            <h3>Objectif</h3>
+            <p>Créer un module d’ajout de produit.</p>
+
+            <h3>Données requises</h3>
+            <ul>
+                <li>name (min 3)</li>
+                <li>price (positif)</li>
+                <li>description (min 10)</li>
+            </ul>
+
+            <h3>Travail backend</h3>
+            <ul>
+                <li>Créer schéma Zod</li>
+                <li>Créer route POST /products</li>
+                <li>Insérer en base</li>
+            </ul>
+
+            <h3>Travail frontend</h3>
+            <ul>
+                <li>Créer formulaire React Hook Form</li>
+                <li>Connecter Zod</li>
+                <li>Envoyer via Axios</li>
+            </ul>
+
+            <h3>Tests obligatoires</h3>
+            <ol>
+                <li>Nom trop court</li>
+                <li>Prix négatif</li>
+                <li>Description vide</li>
+                <li>Données manquantes</li>
+            </ol>
+
+            <h3>Extension avancée</h3>
+            <ul>
+                <li>Afficher liste produits</li>
+                <li>Ajouter suppression</li>
+                <li>Centraliser gestion erreurs</li>
+            </ul>
+
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
